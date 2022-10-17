@@ -61,14 +61,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose -f docker-compose.dev.yml up --build
+      - run: docker-compose -f docker-compose.dev.yml up -d --build
       - uses: stackhawk/hawkscan-action@v2.0.0
         with:
           apiKey: ${{ secrets.HAWK_API_KEY }}
     
         
   build-and-push-image:
-    needs: dependency-analysis
+    needs: [dependency-analysis, dast-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read
