@@ -11,7 +11,6 @@ COPY . /app
 WORKDIR /app
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o /bin/app ./cmd/api/main.go
-RUN apk add --no-cache ca-certificates
 
 # Step 3: Final
 FROM scratch
