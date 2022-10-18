@@ -10,7 +10,7 @@
 * [go-redis](https://github.com/go-redis/redis) - Type-safe Redis client for Golang
 * [zap](https://github.com/uber-go/zap) - Logger
 * [validator](https://github.com/go-playground/validator) - Go Struct and Field validation
-* [jwt-go](https://github.com/dgrijalva/jwt-go) - JSON Web Tokens (JWT)
+* [jwt-go](https://github.com/golang-jwt/jwt/v4) - JSON Web Tokens (JWT)
 * [uuid](https://github.com/google/uuid) - UUID
 * [migrate](https://github.com/golang-migrate/migrate) - Database migrations. CLI and Golang library.
 * [minio-go](https://github.com/minio/minio-go) - AWS S3 MinIO Client SDK for Go

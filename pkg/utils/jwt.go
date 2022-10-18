@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/AleksK1NG/api-mc/config"
 	"github.com/AleksK1NG/api-mc/internal/models"
