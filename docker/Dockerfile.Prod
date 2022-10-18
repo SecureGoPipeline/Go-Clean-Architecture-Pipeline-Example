@@ -1,0 +1,29 @@
+# Step 1: Modules caching
+FROM golang:1.19.2 as modules
+COPY go.mod go.sum /modules/
+WORKDIR /modules
+RUN go mod download
+
+# Step 2: Builder
+FROM golang:1.19.2 as builder
+COPY --from=modules /go/pkg /go/pkg
+COPY . /app
+WORKDIR /app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -o /bin/app ./cmd/api/main.go
+RUN apk add --no-cache ca-certificates
+
+# Step 3: Final
+FROM scratch
+ENV config=docker
+EXPOSE 5000
+
+COPY --from=builder /app/config /config
+COPY --from=builder /app/ssl /ssl
+COPY --from=builder /bin/app /app
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY --from=tarampampam/curl:7.78.0 /bin/curl /bin/curl
+HEALTHCHECK --interval=5s --timeout=2s --retries=8 --start-period=5s CMD ["curl", "--fail", "-s", "https://127.0.0.1:5000/swagger/doc.json"]
+
+CMD ["/app"]

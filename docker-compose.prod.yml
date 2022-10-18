@@ -1,0 +1,114 @@
+version: "3.8"
+
+services:
+  web:
+    container_name: api
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile.Prod
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - PORT=5000
+    depends_on:
+      postgesql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - web_api
+
+  redis:
+    image: redis:6-alpine
+    container_name: api_redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    restart: always
+    networks:
+      - web_api
+
+  postgesql:
+    image: postgres:12-alpine
+    container_name: api_postgesql
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=auth_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - web_api
+
+  prometheus:
+    container_name: prometheus_container
+    image: prom/prometheus
+    volumes:
+      - ./docker/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:Z
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=20d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - web_api
+
+  node_exporter:
+    container_name: node_exporter_container
+    image: prom/node-exporter
+    networks:
+      - web_api
+
+  grafana:
+    container_name: grafana_container
+    image: grafana/grafana
+    networks:
+      - web_api
+
+  minio:
+    image: minio/minio:latest
+    container_name: myminio
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
+    networks:
+      - web_api
+
+  mc:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host rm local;
+      /usr/bin/mc config host add --quiet --api s3v4 local http://myminio:9000 minio minio123;
+      /usr/bin/mc rb --force local/somebucketname1/;
+      /usr/bin/mc mb --quiet local/somebucketname1/;
+      /usr/bin/mc policy set public local/somebucketname1;
+      "
+    networks:
+      - web_api
+
+  jaeger:
+    container_name: jaeger_container
+    image: jaegertracing/all-in-one:1.21
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    networks:
+      - web_api
+
+
+networks:
+  web_api:
+    driver: bridge
