@@ -13,9 +13,16 @@ services:
     environment:
       - PORT=5000
     depends_on:
-      - postgesql
-      - redis
+      - postgesql:
+          condition: service_healthy
+      - redis:
+          condition: service_healthy
     restart: always
+    healthcheck:
+      test: "curl -f localhost:5000"
+      interval: 5s
+      timeout: 5s
+      retries: 20
     volumes:
       - ./:/app
     networks:
@@ -26,6 +33,11 @@ services:
     container_name: api_redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
     restart: always
     networks:
       - web_api
@@ -40,6 +52,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=auth_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     networks:
