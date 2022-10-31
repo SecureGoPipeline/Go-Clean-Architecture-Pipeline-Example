@@ -88,6 +88,24 @@ jobs:
             -Dsonar.tests=.
             -Dsonar.test.inclusions=**/*_test.go
     
+  container-scan:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:   
+      - uses: actions/checkout@v3
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: docker/Dockerfile.Prod
+          args: --sarif-file-output=snyk.sarif --severity-threshold=high
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+          
   build-and-push-image:
     needs: [dependency-analysis, dast-scan, sast-scan]
     runs-on: ubuntu-latest
