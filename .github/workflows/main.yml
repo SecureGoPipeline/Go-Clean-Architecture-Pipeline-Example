@@ -27,14 +27,14 @@ jobs:
     - name: Test
       run: |
         go install github.com/jstemmer/go-junit-report/v2@latest
-        go test -v -cover -race ./... | go-junit-report > report.xml
+        go test -v -cover -race ./... | go-junit-report > coverage.xml
     
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()
       with:
         name: Test Report
-        path: report.xml
+        path: coverage.xml
         reporter: java-junit
 
   dependency-analysis:
@@ -67,10 +67,29 @@ jobs:
           apiKey: ${{ secrets.HAWK_API_KEY }}
           codeScanningAlerts: true
           githubToken: ${{ github.token }}
+          
+  sast-scan:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:   
+      - uses: actions/checkout@v3
+      - name: Analyze with SonarCloud
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=securegopipeline
+            -Dsonar.projectKey=SecureGoPipeline_Go-Clean-Architecture-Pipeline-Example
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/*_test.go
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*_test.go
     
-        
   build-and-push-image:
-    needs: [dependency-analysis, dast-scan]
+    needs: [dependency-analysis, dast-scan, sast-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read
