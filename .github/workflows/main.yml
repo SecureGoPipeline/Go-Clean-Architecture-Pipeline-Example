@@ -93,13 +93,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:   
       - uses: actions/checkout@v3
+      - name: Build a Docker image
+        run: docker build -t secure-go-pipeline/example-pipeline docker/Dockerfile.Prod
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: docker/Dockerfile.Prod
-          args: --sarif-file-output=snyk.sarif --severity-threshold=high
+          image: secure-go-pipeline/example-pipeline
+          args: --file=docker/Dockerfile.Prod --severity-threshold=high
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         if: always()
@@ -107,7 +109,7 @@ jobs:
           sarif_file: snyk.sarif
           
   build-and-push-image:
-    needs: [dependency-analysis, dast-scan, sast-scan]
+    needs: [dependency-analysis, dast-scan, sast-scan, container-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read
