@@ -82,7 +82,7 @@ jobs:
           projectBaseDir: .
           args: >
             -Dsonar.organization=securegopipeline
-            -Dsonar.projectKey=SecureGoPipeline_Go-Clean-Architecture-Pipeline-Example
+            -Dsonar.projectKey=Go-Secure-Pipeline-Example
             -Dsonar.sources=.
             -Dsonar.exclusions=**/*_test.go
             -Dsonar.tests=.
