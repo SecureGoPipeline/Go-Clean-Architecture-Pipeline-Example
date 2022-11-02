@@ -14,7 +14,13 @@ During the development of the example pipeline, the choice was made to focus on 
 This pipeline has been configured to prevent the merging of high vulnerabilities. This could be configured further.
 
 # Result
-When a vulnerability is detected it is stored in the code analysis tab within GitHub. Should say vulnerability be deemed as 'high' the build shall fail and deployment is prevented.
+When a vulnerability is detected by the Dynamic code scanning, Dependency scanning or Container scanning tools it is stored in the code analysis tab within GitHub.
+
+![Security tab](./images/security%20tab.png)
+
+Should a security control find vulnerability be deemed as 'high' the build shall fail and deployment is prevented.
+
+![Failing pipeline](./images/failing%20pipeline.png)
 
 # Recommendation
 The following security controls proved to be of immediate benefit.
