@@ -1,54 +1,26 @@
-# Copied as an example from: https://github.com/AleksK1NG/Go-Clean-Architecture-REST-API
+# Secure pipeline example
+Example codebase from: https://github.com/AleksK1NG/Go-Clean-Architecture-REST-API
 
-### Golang [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) REST API example 🚀
+# Choices
+During a pipeline analysis, a couple of security controls were recommended. Following that advice the following security controls were implemented:
+* Static code scanning: [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) 
+* Dynamic code scanning: [StackHawk](https://www.stackhawk.com/)
+* Dependency scanning: [Snyk](https://snyk.io/product/open-source-security-management/)
+* Container scanning: [Snyk](https://snyk.io/product/container-vulnerability-management/)
 
-#### 👨‍💻 Full list what has been used:
-* [echo](https://github.com/labstack/echo) - Web framework
-* [sqlx](https://github.com/jmoiron/sqlx) - Extensions to database/sql.
-* [pgx](https://github.com/jackc/pgx) - PostgreSQL driver and toolkit for Go
-* [viper](https://github.com/spf13/viper) - Go configuration with fangs
-* [go-redis](https://github.com/go-redis/redis) - Type-safe Redis client for Golang
-* [zap](https://github.com/uber-go/zap) - Logger
-* [validator](https://github.com/go-playground/validator) - Go Struct and Field validation
-* [jwt-go](https://github.com/golang-jwt/jwt/v4) - JSON Web Tokens (JWT)
-* [uuid](https://github.com/google/uuid) - UUID
-* [migrate](https://github.com/golang-migrate/migrate) - Database migrations. CLI and Golang library.
-* [minio-go](https://github.com/minio/minio-go) - AWS S3 MinIO Client SDK for Go
-* [bluemonday](https://github.com/microcosm-cc/bluemonday) - HTML sanitizer
-* [swag](https://github.com/swaggo/swag) - Swagger
-* [testify](https://github.com/stretchr/testify) - Testing toolkit
-* [gomock](https://github.com/golang/mock) - Mocking framework
-* [CompileDaemon](https://github.com/githubnemo/CompileDaemon) - Compile daemon for Go
-* [Docker](https://www.docker.com/) - Docker
+### Design choices
+During the development of the example pipeline, the choice was made to focus on the master branch. When using multiple development branches it would be recommended to limit the execution of certain security controls to retain instant feedback. For example, a dynamic code scan should be run on features that are complete. In this case, full security checks would be run when merging into the master.
 
-#### Recomendation for local development most comfortable usage:
-    make local // run all containers
-    make run // it's easier way to attach debugger or rebuild/rerun project
+This pipeline has been configured to prevent the merging of high vulnerabilities. This could be configured further.
 
-#### 🙌👨‍💻🚀 Docker-compose files:
-    docker-compose.local.yml - run postgresql, redis, aws, prometheus, grafana containrs
-    docker-compose.dev.yml - run docker development environment
-    docker-compose.delve.yml run development environment with delve debug
+# Result
+When a vulnerability is detected it is stored in the code analysis tab within GitHub. Should say vulnerability be deemed as 'high' the build shall fail and deployment is prevented.
 
-### Docker development usage:
-    make docker
+# Recommendation
+The following security controls proved to be of immediate benefit.
+* Static code scanning: [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) 
+* Dependency scanning: [Snyk](https://snyk.io/product/open-source-security-management/)
 
-### Local development usage:
-    make local
-    make run
+Dynamic code scanning has its benefits but most of these mostly apply to an API that follows the [OpenAPI specification](https://swagger.io/resources/open-api/) this allows the tool to scan the available endpoints for unexpected responses or vulnerable input.
 
-### SWAGGER UI:
-
-https://localhost:5000/swagger/index.html
-
-### Jaeger UI:
-
-http://localhost:16686
-
-### Prometheus UI:
-
-http://localhost:9090
-
-### Grafana UI:
-
-http://localhost:3000
+Container scanning only proves useful the docker file uses a distribution. Should a distroless static or scratch base image be used, there would be nothing for the container scanning tool to scan and this step could be ignored.
